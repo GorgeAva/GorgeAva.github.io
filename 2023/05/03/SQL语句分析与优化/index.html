@@ -193,7 +193,7 @@
   const ipt = document.querySelector('#search-input')
   const btn = document.querySelector('#search-btn')
   const layer = document.querySelector('#search-layer')
-  const posts = JSON.parse(`[{"title":"SQL语句分析与优化","cover":"/imgs/cover/hhx2.png","path":"2023/05/03/SQL语句分析与优化/"},{"title":"如何快速定位Http问题-Network面板请求与响应","cover":"/imgs/cover/hhx.jpg","path":"2023/05/02/如何快速定位Http问题-Network面板请求与响应/"},{"title":"博客迁移","path":"2023/05/02/开始/"}]`)
+  const posts = JSON.parse(`[{"title":"SQL语句分析与优化","cover":"/imgs/cover/hhx2.png","path":"2023/05/03/SQL语句分析与优化/"},{"title":"博客迁移","path":"2023/05/02/开始/"},{"title":"如何快速定位Http问题-Network面板请求与响应","cover":"/imgs/cover/hhx.jpg","path":"2023/05/02/如何快速定位Http问题-Network面板请求与响应/"}]`)
   ipt.addEventListener('keyup', e => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -396,20 +396,20 @@ pre:active {
       <p>数据量小的时候，看不出来，当数据量急剧上升的时候。sql的效率问题就会暴露出来。</p>
 <h1 id="显示数据库中sql语句的状态信息"><a href="#显示数据库中sql语句的状态信息" class="headerlink" title="显示数据库中sql语句的状态信息"></a>显示数据库中sql语句的状态信息</h1><p><code>show status like &#39;Com_______&#39;</code> ; 查询当前连接的信息<br> 查看 每一项命令执行的频次信息</p>
 <p> <code>show global status like &#39;Com_______&#39;</code> 查询全局的连接信息</p>
-<h3 id="上面的状态信息是针对数据库的，还有针对innodb的查询语句"><a href="#上面的状态信息是针对数据库的，还有针对innodb的查询语句" class="headerlink" title="上面的状态信息是针对数据库的，还有针对innodb的查询语句"></a>上面的状态信息是针对数据库的，还有针对innodb的查询语句</h3><p> <code>show global status like &#39;Innodb_rows_%&#39;</code><br> <img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p124" alt="e749259c2d0ee2803ec04d38dd45bb3a.png"></p>
+<h3 id="上面的状态信息是针对数据库的，还有针对innodb的查询语句"><a href="#上面的状态信息是针对数据库的，还有针对innodb的查询语句" class="headerlink" title="上面的状态信息是针对数据库的，还有针对innodb的查询语句"></a>上面的状态信息是针对数据库的，还有针对innodb的查询语句</h3><p> <code>show global status like &#39;Innodb_rows_%&#39;</code><br> <img src="/imgs/posts/3-1.png" alt="e749259c2d0ee2803ec04d38dd45bb3a.png"></p>
 <h1 id="定位低效率的sql语句"><a href="#定位低效率的sql语句" class="headerlink" title="定位低效率的sql语句"></a>定位低效率的sql语句</h1><p> 可以通过下面两种方式来定位执行效率低的sql语句</p>
 <h2 id="慢查询日志"><a href="#慢查询日志" class="headerlink" title="慢查询日志"></a>慢查询日志</h2><p> 某条sql语句执行的时间超过了我们所设定的时间之后，就会将该sql语句记录到慢查询日志里面。<br> 具体操作为，用 –log-slow-queries[&#x3D;file_name]选项启动的时候，mysql写一个包含所有执行时间超过long_query_time 秒的<br> SQL语句的日志文件。</p>
 <h2 id="show-processlist"><a href="#show-processlist" class="headerlink" title="show processlist"></a>show processlist</h2><p> 慢查询日志在查询结束以后才记录，所以在应用反应执行效率出现问题的时候查询慢查询日志并不能定位问题，可以使用show processlist命令查看当前MYSQL在进行的线程包括线程的状态，是否锁表等，可以实时的查看sql的执行情况，同时对一些锁表操作进行优化。<br> 如果某一条sql语句的执行比较快速，info的位置就会立即显示show processlist,否则的话会显示执行的时间，并且状态为Sending data,info的信息为 当前执行的sql语句。</p>
 <h1 id="explain指令"><a href="#explain指令" class="headerlink" title="explain指令"></a>explain指令</h1><p> explain 指令分析执行计划</p>
 <pre class="line-numbers language-none"><code class="language-none">explain 需要执行的sql 语句<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p><img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p125" alt="94e5148a7cf4f61449c30f1097a66a73.png"></p>
+<p><img src="/imgs/posts/3-2.png" alt="94e5148a7cf4f61449c30f1097a66a73.png"></p>
 <h2 id="explain-之id"><a href="#explain-之id" class="headerlink" title="explain 之id"></a>explain 之id</h2><p>id 的值分为三种情况</p>
-<h3 id="id-值全部一样，表示加载表的顺序，从上到下"><a href="#id-值全部一样，表示加载表的顺序，从上到下" class="headerlink" title="id 值全部一样，表示加载表的顺序，从上到下"></a>id 值全部一样，表示加载表的顺序，从上到下</h3><h3 id="id-不同，id的值越大，优先级越高，越先被执行"><a href="#id-不同，id的值越大，优先级越高，越先被执行" class="headerlink" title="id 不同，id的值越大，优先级越高，越先被执行"></a>id 不同，id的值越大，优先级越高，越先被执行</h3><h3 id="id部分相同，部分不同"><a href="#id部分相同，部分不同" class="headerlink" title="id部分相同，部分不同"></a>id部分相同，部分不同</h3><h2 id="explain-之-select-type"><a href="#explain-之-select-type" class="headerlink" title="explain 之 select_type"></a>explain 之 select_type</h2><p><img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p126" alt="96fd5d3a6f8c454ad4194ed2c989d8b4.png"><br>根据上面表格的顺序，查询的效率越来越低</p>
+<h3 id="id-值全部一样，表示加载表的顺序，从上到下"><a href="#id-值全部一样，表示加载表的顺序，从上到下" class="headerlink" title="id 值全部一样，表示加载表的顺序，从上到下"></a>id 值全部一样，表示加载表的顺序，从上到下</h3><h3 id="id-不同，id的值越大，优先级越高，越先被执行"><a href="#id-不同，id的值越大，优先级越高，越先被执行" class="headerlink" title="id 不同，id的值越大，优先级越高，越先被执行"></a>id 不同，id的值越大，优先级越高，越先被执行</h3><h3 id="id部分相同，部分不同"><a href="#id部分相同，部分不同" class="headerlink" title="id部分相同，部分不同"></a>id部分相同，部分不同</h3><h2 id="explain-之-select-type"><a href="#explain-之-select-type" class="headerlink" title="explain 之 select_type"></a>explain 之 select_type</h2><p><img src="/imgs/posts/3-3.png" alt="96fd5d3a6f8c454ad4194ed2c989d8b4.png"><br>根据上面表格的顺序，查询的效率越来越低</p>
 <h2 id="explain-之-table"><a href="#explain-之-table" class="headerlink" title="explain 之 table"></a>explain 之 table</h2><p>表示当前所查询的数据来源于哪一张表</p>
-<h2 id="explain-之-type"><a href="#explain-之-type" class="headerlink" title="explain 之 type"></a>explain 之 type</h2><p>通过type就可以确定当前sql的执行情况以及效率的情况。<br><img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p127" alt="2074d12aca5769b9b6abbbad603ee81b.png"><br>执行效率一般是从上到下依次降低，一般进行优化的时候只需要达到range级别就好，最好到达ref的级别。</p>
+<h2 id="explain-之-type"><a href="#explain-之-type" class="headerlink" title="explain 之 type"></a>explain 之 type</h2><p>通过type就可以确定当前sql的执行情况以及效率的情况。<br><img src="/imgs/posts/3-4.png" alt="2074d12aca5769b9b6abbbad603ee81b.png"><br>执行效率一般是从上到下依次降低，一般进行优化的时候只需要达到range级别就好，最好到达ref的级别。</p>
 <h2 id="explain-之-key"><a href="#explain-之-key" class="headerlink" title="explain 之 key"></a>explain 之 key</h2><p>possibale_keys : 可能用到的key<br>key: 现在在使用的key<br>key_len : key 的长度</p>
 <h2 id="explain-之-rows"><a href="#explain-之-rows" class="headerlink" title="explain 之 rows"></a>explain 之 rows</h2><p>指的是扫描的行数</p>
-<h2 id="explain-之-extra"><a href="#explain-之-extra" class="headerlink" title="explain 之 extra"></a>explain 之 extra</h2><p><img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p128" alt="f262de20295beb233fadfae76761a512.png"></p>
+<h2 id="explain-之-extra"><a href="#explain-之-extra" class="headerlink" title="explain 之 extra"></a>explain 之 extra</h2><p><img src="/imgs/posts/3-5.png" alt="f262de20295beb233fadfae76761a512.png"></p>
 <h1 id="show-profile-分析sql语句"><a href="#show-profile-分析sql语句" class="headerlink" title="show profile 分析sql语句"></a>show profile 分析sql语句</h1><p>mysql从5.0.37 开始了 支持了show profile的语句<br>show profile 能够帮助我们分析，在执行sql 语句的时候，时间的耗费情况都在哪里了。</p>
 <ol>
 <li><p>查看当前的系统是否已经开始了show profile</p>
@@ -421,7 +421,7 @@ pre:active {
 <pre class="line-numbers language-none"><code class="language-none">show profiles;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></li>
 <li><p>该sql 执行过程中，每个线程的状态和消耗的时间</p>
 <pre class="line-numbers language-none"><code class="language-none">show profile for query query_id<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
-<p><img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p129" alt="b51972522108fcfcd11795b30075fdc2.png"></p>
+<p><img src="/imgs/posts/3-6.png" alt="b51972522108fcfcd11795b30075fdc2.png"></p>
 </li>
 </ol>
 <p>该语句如果添加上 show profile all for query query_id;就会查询出来关于cpu以及磁盘等的一些信息。</p>
