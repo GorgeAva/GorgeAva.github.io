@@ -193,7 +193,7 @@
   const ipt = document.querySelector('#search-input')
   const btn = document.querySelector('#search-btn')
   const layer = document.querySelector('#search-layer')
-  const posts = JSON.parse(`[{"title":"如何快速定位Http问题-Network面板请求与响应","cover":"/imgs/cover/hhx.jpg","path":"2023/05/02/如何快速定位Http问题-Network面板请求与响应/"},{"title":"博客迁移","path":"2023/05/02/开始/"},{"title":"SQL语句分析与优化","path":"2023/05/03/SQL语句分析与优化/"}]`)
+  const posts = JSON.parse(`[{"title":"SQL语句分析与优化","cover":"/imgs/cover/hhx2.png","path":"2023/05/03/SQL语句分析与优化/"},{"title":"如何快速定位Http问题-Network面板请求与响应","cover":"/imgs/cover/hhx.jpg","path":"2023/05/02/如何快速定位Http问题-Network面板请求与响应/"},{"title":"博客迁移","path":"2023/05/02/开始/"}]`)
   ipt.addEventListener('keyup', e => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -258,13 +258,13 @@
       <div class="main-left--statics">
         <a href="/categories">
           <div>
-            <span>2</span>
+            <span>3</span>
             <span>分类</span>
           </div>
         </a>
         <a href="/tags">
           <div>
-            <span>2</span>
+            <span>3</span>
             <span>标签</span>
           </div>
         </a>
@@ -378,22 +378,108 @@ pre:active {
           
           <div class="article-info--categories">
             <span>分类：</span>
-            
+            <a class="category-link" href="/categories/MYSQL/">MYSQL</a>
           </div>
           
           
           <div class="article-info--tags">
             <span>标签：</span>
-            
+            <a class="tag-link" href="/tags/mysql/" rel="tag">mysql</a>
           </div>
           
           <p class="article-info--date">日期：2023-05-03 09:23:00</p>
         </div>
-        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
+        <img src="/imgs/cover/hhx2.png" alt="" class="article-cover">
       </div>
     </div>
     <article class="article-content">
-      
+      <p>数据量小的时候，看不出来，当数据量急剧上升的时候。sql的效率问题就会暴露出来。</p>
+<h1 id="显示数据库中sql语句的状态信息"><a href="#显示数据库中sql语句的状态信息" class="headerlink" title="显示数据库中sql语句的状态信息"></a>显示数据库中sql语句的状态信息</h1><p><code>show status like &#39;Com_______&#39;</code> ; 查询当前连接的信息<br> 查看 每一项命令执行的频次信息</p>
+<p> <code>show global status like &#39;Com_______&#39;</code> 查询全局的连接信息</p>
+<h3 id="上面的状态信息是针对数据库的，还有针对innodb的查询语句"><a href="#上面的状态信息是针对数据库的，还有针对innodb的查询语句" class="headerlink" title="上面的状态信息是针对数据库的，还有针对innodb的查询语句"></a>上面的状态信息是针对数据库的，还有针对innodb的查询语句</h3><p> <code>show global status like &#39;Innodb_rows_%&#39;</code><br> <img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p124" alt="e749259c2d0ee2803ec04d38dd45bb3a.png"></p>
+<h1 id="定位低效率的sql语句"><a href="#定位低效率的sql语句" class="headerlink" title="定位低效率的sql语句"></a>定位低效率的sql语句</h1><p> 可以通过下面两种方式来定位执行效率低的sql语句</p>
+<h2 id="慢查询日志"><a href="#慢查询日志" class="headerlink" title="慢查询日志"></a>慢查询日志</h2><p> 某条sql语句执行的时间超过了我们所设定的时间之后，就会将该sql语句记录到慢查询日志里面。<br> 具体操作为，用 –log-slow-queries[&#x3D;file_name]选项启动的时候，mysql写一个包含所有执行时间超过long_query_time 秒的<br> SQL语句的日志文件。</p>
+<h2 id="show-processlist"><a href="#show-processlist" class="headerlink" title="show processlist"></a>show processlist</h2><p> 慢查询日志在查询结束以后才记录，所以在应用反应执行效率出现问题的时候查询慢查询日志并不能定位问题，可以使用show processlist命令查看当前MYSQL在进行的线程包括线程的状态，是否锁表等，可以实时的查看sql的执行情况，同时对一些锁表操作进行优化。<br> 如果某一条sql语句的执行比较快速，info的位置就会立即显示show processlist,否则的话会显示执行的时间，并且状态为Sending data,info的信息为 当前执行的sql语句。</p>
+<h1 id="explain指令"><a href="#explain指令" class="headerlink" title="explain指令"></a>explain指令</h1><p> explain 指令分析执行计划</p>
+<pre class="line-numbers language-none"><code class="language-none">explain 需要执行的sql 语句<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p><img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p125" alt="94e5148a7cf4f61449c30f1097a66a73.png"></p>
+<h2 id="explain-之id"><a href="#explain-之id" class="headerlink" title="explain 之id"></a>explain 之id</h2><p>id 的值分为三种情况</p>
+<h3 id="id-值全部一样，表示加载表的顺序，从上到下"><a href="#id-值全部一样，表示加载表的顺序，从上到下" class="headerlink" title="id 值全部一样，表示加载表的顺序，从上到下"></a>id 值全部一样，表示加载表的顺序，从上到下</h3><h3 id="id-不同，id的值越大，优先级越高，越先被执行"><a href="#id-不同，id的值越大，优先级越高，越先被执行" class="headerlink" title="id 不同，id的值越大，优先级越高，越先被执行"></a>id 不同，id的值越大，优先级越高，越先被执行</h3><h3 id="id部分相同，部分不同"><a href="#id部分相同，部分不同" class="headerlink" title="id部分相同，部分不同"></a>id部分相同，部分不同</h3><h2 id="explain-之-select-type"><a href="#explain-之-select-type" class="headerlink" title="explain 之 select_type"></a>explain 之 select_type</h2><p><img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p126" alt="96fd5d3a6f8c454ad4194ed2c989d8b4.png"><br>根据上面表格的顺序，查询的效率越来越低</p>
+<h2 id="explain-之-table"><a href="#explain-之-table" class="headerlink" title="explain 之 table"></a>explain 之 table</h2><p>表示当前所查询的数据来源于哪一张表</p>
+<h2 id="explain-之-type"><a href="#explain-之-type" class="headerlink" title="explain 之 type"></a>explain 之 type</h2><p>通过type就可以确定当前sql的执行情况以及效率的情况。<br><img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p127" alt="2074d12aca5769b9b6abbbad603ee81b.png"><br>执行效率一般是从上到下依次降低，一般进行优化的时候只需要达到range级别就好，最好到达ref的级别。</p>
+<h2 id="explain-之-key"><a href="#explain-之-key" class="headerlink" title="explain 之 key"></a>explain 之 key</h2><p>possibale_keys : 可能用到的key<br>key: 现在在使用的key<br>key_len : key 的长度</p>
+<h2 id="explain-之-rows"><a href="#explain-之-rows" class="headerlink" title="explain 之 rows"></a>explain 之 rows</h2><p>指的是扫描的行数</p>
+<h2 id="explain-之-extra"><a href="#explain-之-extra" class="headerlink" title="explain 之 extra"></a>explain 之 extra</h2><p><img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p128" alt="f262de20295beb233fadfae76761a512.png"></p>
+<h1 id="show-profile-分析sql语句"><a href="#show-profile-分析sql语句" class="headerlink" title="show profile 分析sql语句"></a>show profile 分析sql语句</h1><p>mysql从5.0.37 开始了 支持了show profile的语句<br>show profile 能够帮助我们分析，在执行sql 语句的时候，时间的耗费情况都在哪里了。</p>
+<ol>
+<li><p>查看当前的系统是否已经开始了show profile</p>
+<pre class="line-numbers language-none"><code class="language-none">select @@have_profiling;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></li>
+<li><p>开启show profile的执行语句</p>
+<pre class="line-numbers language-none"><code class="language-none">set profiling &#x3D; 1;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+</li>
+<li><p>查看sql 语句的执行耗时</p>
+<pre class="line-numbers language-none"><code class="language-none">show profiles;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></li>
+<li><p>该sql 执行过程中，每个线程的状态和消耗的时间</p>
+<pre class="line-numbers language-none"><code class="language-none">show profile for query query_id<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p><img src="evernotecid://4047FD72-37C1-45D4-A742-2684E500ED95/appyinxiangcom/34699958/ENResource/p129" alt="b51972522108fcfcd11795b30075fdc2.png"></p>
+</li>
+</ol>
+<p>该语句如果添加上 show profile all for query query_id;就会查询出来关于cpu以及磁盘等的一些信息。</p>
+<h1 id="大批量的插入数据该如何优化"><a href="#大批量的插入数据该如何优化" class="headerlink" title="大批量的插入数据该如何优化"></a>大批量的插入数据该如何优化</h1><ol>
+<li>是用load 指令导入数据，适当的设置可以提高导入的效率（数据逗号隔开，用换行符结尾）</li>
+</ol>
+<ul>
+<li>如果表使用的是innodb 这个存储引擎，那么我们导入数据的时候可以给数据提前设置好自增id.(因为如果没有设置的话，系统会默认创建一个内部的列作为主键，如果不是有顺序的，那个对于b+树来讲的话，就需要调整树的结构，耗费一定的时间。</li>
+</ul>
+<ol start="2">
+<li>手动提交事务<br> 如果是应用使用自动提交的方式，建议在导入数据之前执行set autocommit &#x3D; 0;关闭自动提交。导入结束后在执行set autocommit &#x3D; 1<br> 打开自动提交，也可以提高导入效率。</li>
+</ol>
+<h1 id="sql优化insert-优化"><a href="#sql优化insert-优化" class="headerlink" title="sql优化insert 优化"></a>sql优化insert 优化</h1><ol>
+<li>如果需要对同一张表插入很多行数据的时候，应该尽量使用多个值表的insert 语句，这将会大大缩减客户端与数据库之间的连接，关闭消耗等。<br>例如：<pre class="line-numbers language-none"><code class="language-none">insert into table t_user values(1,&#39;tom&#39;);
+insert into table t_user values(2,&#39;tim&#39;);
+我可以转化为
+insert into table t_user values(1,&#39;tom&#39;),(2,&#39;tim&#39;);<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li>执行多条sql 语句的时候，将事务的提交方式转为 手动提交</li>
+<li>数据有效的插入</li>
+</ol>
+<h1 id="sql-优化-之order-by-优化"><a href="#sql-优化-之order-by-优化" class="headerlink" title="sql 优化 之order by 优化"></a>sql 优化 之order by 优化</h1><p>order by 排序，在mysql 中支持两种排序方式</p>
+<ol>
+<li>filesort 排序，通过文件系统进行排序，不会使用索引机制。所有不是通过索引直接返回排序结果的排序都叫做filesort 排序</li>
+<li>通过有序索引顺序直接返回有序数据，这种情况就是using index。不需要额外的排序，操作效率高。</li>
+</ol>
+<p>也就是说在进行order by 的时候 如果查询的字段添加了索引，那么在进行order by的时候就会使用using index 这种排序方式。<br>如果在进行查找的时候 select的包含非索引字段，就会转变为using index。但是如果根据多字段排序的时候，并且两个排序的字段不是同时排序或者同时降序，就会出现不使用using index 的情况。</p>
+<p>因此在使用order by的时候，where 条件和order by 使用相同的索引，并且order by 的顺序和索引的顺序相同，并且order by的字段都升序或者都是降序。</p>
+<p>如果是filesort 无法避免的话，就需要对filesort进行优化，关于Filesort 有两种扫描算法：</p>
+<ol>
+<li>两次扫描算法<br>Mysql 4.1 之前使用这个方式排序。首先根据这个方式取出排序字段和行指针信息，然后在排序区sort buffer 中排序，如果sort buffer 不够的话，就在临时表temporary table 中存储排序结果。完成排序之后，在根据行指针回表读取记录，该操作可能会导致大量随机I&#x2F;O的操作。</li>
+<li>一次扫描算法<br>一次性取出满足条件的所有字段，然后在排序区sort buffer 中排序后直接输出结果。排序时内存开销较大，但是排序效率比两次扫描算法要高</li>
+</ol>
+<h1 id="sql优化-之group-by"><a href="#sql优化-之group-by" class="headerlink" title="sql优化 之group by"></a>sql优化 之group by</h1><p>使用group by的时候会出现自动排序的情况,并且排序一般使用的是filesort，因此 我们可以在group by 后面添加order by null的操作。</p>
+<h1 id="优化嵌套查询"><a href="#优化嵌套查询" class="headerlink" title="优化嵌套查询"></a>优化嵌套查询</h1><p>尽量使用多表联查替换 子查询。<br><code>select * from user where id in (select id from school)</code><br>可以优化为：</p>
+<pre class="line-numbers language-none"><code class="language-none">select * from user as u,school as s where u.id&#x3D;s.id;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h1 id="优化or条件"><a href="#优化or条件" class="headerlink" title="优化or条件"></a>优化or条件</h1><p>对于包含or 的子查询，如果要利用索引，则or 之间的每个条件列都必须用到索引，而且不能用到符合索引；如果没有索引，就应该增加索引。<br>并且如果在条件列使用的是复合索引，那么也会失效，必须建立单列索引。<br>建议使用union 替换or。</p>
+<h1 id="sql优化之limit"><a href="#sql优化之limit" class="headerlink" title="sql优化之limit"></a>sql优化之limit</h1><p>例如在使用limit n,10 的时候，mysql需要排序前n 条记录，然后保留n- n+10的记录。前面 的都会丢弃，查询排序的代价是非常大的。<br>因此，我们可以进行如下优化：</p>
+<ol>
+<li>在索引上完成排序分页操作，最后根据主键关联回原表查询所需要的其他列的内容<pre class="line-numbers language-none"><code class="language-none">select * from tb_item as a,(select id from tb_item order by id limit 2000,10) as b where a.id &#x3D; b.id;<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></li>
+<li>对于主键自增的表，可以把limit 查询转换成某个位置的查询<pre class="line-numbers language-none"><code class="language-none">select * from tb_item where id&gt;n limit 10;
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+这个的查询效率最高,(但是也存在问题，比如id 被删除，不再连续)。</li>
+</ol>
+<h1 id="使用sql提示"><a href="#使用sql提示" class="headerlink" title="使用sql提示"></a>使用sql提示</h1><p>sql 提示是优化数据库的一个重要的手段，简单来说就是在sql语句中加入一些人为的提示来达到优化的目的。</p>
+<ol>
+<li>use index 在查询语句的表名后面，添加use index 来提供希望mysql去参考的索引列表，就可以让mysql 不在考虑使用其他可用索引。（mysql不一定会按照这个提供的方案去执行）</li>
+<li>使用ignore index 可以实现让用户单纯的忽略一个或者多个索引。</li>
+<li>使用force index 为强制Mysql使用一个特定的索引，</li>
+</ol>
+<h1 id="覆盖索引的情况"><a href="#覆盖索引的情况" class="headerlink" title="覆盖索引的情况"></a>覆盖索引的情况</h1><p>尽量使用覆盖索引(只访问索引的查询(索引列完全包含查询列))，避免select *<br>Extra 的四种tips</p>
+<ol>
+<li>using index : 使用覆盖索引的时候会出现</li>
+<li>using where : 在查找使用索引的情况下，需要回表去查询所需要的数据</li>
+<li>using index condition :查找使用了索引，但是需要回表查询数据</li>
+<li>using index ;using where : 查找使用了索引，但是需要的数据都在索引列中能找到 ，所以不需要回表查询数据。</li>
+</ol>
+
     </article>
     
     <div class="read-nums">
@@ -414,7 +500,7 @@ pre:active {
     <div class="article-catelogue--wrapper">
       <div class="catelogue catelogue-1">
         <h3>目录</h3>
-        
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%98%BE%E7%A4%BA%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%ADsql%E8%AF%AD%E5%8F%A5%E7%9A%84%E7%8A%B6%E6%80%81%E4%BF%A1%E6%81%AF"><span class="toc-number">1.</span> <span class="toc-text">显示数据库中sql语句的状态信息</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8A%E9%9D%A2%E7%9A%84%E7%8A%B6%E6%80%81%E4%BF%A1%E6%81%AF%E6%98%AF%E9%92%88%E5%AF%B9%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%EF%BC%8C%E8%BF%98%E6%9C%89%E9%92%88%E5%AF%B9innodb%E7%9A%84%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5"><span class="toc-number">1.0.1.</span> <span class="toc-text">上面的状态信息是针对数据库的，还有针对innodb的查询语句</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D%E4%BD%8E%E6%95%88%E7%8E%87%E7%9A%84sql%E8%AF%AD%E5%8F%A5"><span class="toc-number">2.</span> <span class="toc-text">定位低效率的sql语句</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97"><span class="toc-number">2.1.</span> <span class="toc-text">慢查询日志</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#show-processlist"><span class="toc-number">2.2.</span> <span class="toc-text">show processlist</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#explain%E6%8C%87%E4%BB%A4"><span class="toc-number">3.</span> <span class="toc-text">explain指令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#explain-%E4%B9%8Bid"><span class="toc-number">3.1.</span> <span class="toc-text">explain 之id</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#id-%E5%80%BC%E5%85%A8%E9%83%A8%E4%B8%80%E6%A0%B7%EF%BC%8C%E8%A1%A8%E7%A4%BA%E5%8A%A0%E8%BD%BD%E8%A1%A8%E7%9A%84%E9%A1%BA%E5%BA%8F%EF%BC%8C%E4%BB%8E%E4%B8%8A%E5%88%B0%E4%B8%8B"><span class="toc-number">3.1.1.</span> <span class="toc-text">id 值全部一样，表示加载表的顺序，从上到下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#id-%E4%B8%8D%E5%90%8C%EF%BC%8Cid%E7%9A%84%E5%80%BC%E8%B6%8A%E5%A4%A7%EF%BC%8C%E4%BC%98%E5%85%88%E7%BA%A7%E8%B6%8A%E9%AB%98%EF%BC%8C%E8%B6%8A%E5%85%88%E8%A2%AB%E6%89%A7%E8%A1%8C"><span class="toc-number">3.1.2.</span> <span class="toc-text">id 不同，id的值越大，优先级越高，越先被执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#id%E9%83%A8%E5%88%86%E7%9B%B8%E5%90%8C%EF%BC%8C%E9%83%A8%E5%88%86%E4%B8%8D%E5%90%8C"><span class="toc-number">3.1.3.</span> <span class="toc-text">id部分相同，部分不同</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#explain-%E4%B9%8B-select-type"><span class="toc-number">3.2.</span> <span class="toc-text">explain 之 select_type</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#explain-%E4%B9%8B-table"><span class="toc-number">3.3.</span> <span class="toc-text">explain 之 table</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#explain-%E4%B9%8B-type"><span class="toc-number">3.4.</span> <span class="toc-text">explain 之 type</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#explain-%E4%B9%8B-key"><span class="toc-number">3.5.</span> <span class="toc-text">explain 之 key</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#explain-%E4%B9%8B-rows"><span class="toc-number">3.6.</span> <span class="toc-text">explain 之 rows</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#explain-%E4%B9%8B-extra"><span class="toc-number">3.7.</span> <span class="toc-text">explain 之 extra</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#show-profile-%E5%88%86%E6%9E%90sql%E8%AF%AD%E5%8F%A5"><span class="toc-number">4.</span> <span class="toc-text">show profile 分析sql语句</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%A7%E6%89%B9%E9%87%8F%E7%9A%84%E6%8F%92%E5%85%A5%E6%95%B0%E6%8D%AE%E8%AF%A5%E5%A6%82%E4%BD%95%E4%BC%98%E5%8C%96"><span class="toc-number">5.</span> <span class="toc-text">大批量的插入数据该如何优化</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#sql%E4%BC%98%E5%8C%96insert-%E4%BC%98%E5%8C%96"><span class="toc-number">6.</span> <span class="toc-text">sql优化insert 优化</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#sql-%E4%BC%98%E5%8C%96-%E4%B9%8Border-by-%E4%BC%98%E5%8C%96"><span class="toc-number">7.</span> <span class="toc-text">sql 优化 之order by 优化</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#sql%E4%BC%98%E5%8C%96-%E4%B9%8Bgroup-by"><span class="toc-number">8.</span> <span class="toc-text">sql优化 之group by</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E5%B5%8C%E5%A5%97%E6%9F%A5%E8%AF%A2"><span class="toc-number">9.</span> <span class="toc-text">优化嵌套查询</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BC%98%E5%8C%96or%E6%9D%A1%E4%BB%B6"><span class="toc-number">10.</span> <span class="toc-text">优化or条件</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#sql%E4%BC%98%E5%8C%96%E4%B9%8Blimit"><span class="toc-number">11.</span> <span class="toc-text">sql优化之limit</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8sql%E6%8F%90%E7%A4%BA"><span class="toc-number">12.</span> <span class="toc-text">使用sql提示</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%A6%86%E7%9B%96%E7%B4%A2%E5%BC%95%E7%9A%84%E6%83%85%E5%86%B5"><span class="toc-number">13.</span> <span class="toc-text">覆盖索引的情况</span></a></li></ol>
       </div>
       
         <div class="catelogue catelogue-2">
