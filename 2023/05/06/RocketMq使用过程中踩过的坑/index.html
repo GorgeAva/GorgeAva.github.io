@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>我的技术与生活——新博客第一天上线啦 | Hexo</title>
+  <title>我的技术与生活——RocketMq使用过程中踩过的坑 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/css/public.css" />
@@ -16,7 +16,7 @@
 
   <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
   <script>
-    document.title = `我的技术与生活——新博客第一天上线啦`
+    document.title = `我的技术与生活——RocketMq使用过程中踩过的坑`
   </script>
 <meta name="generator" content="Hexo 6.3.0"></head>
 
@@ -371,25 +371,219 @@ pre:active {
 
 <div class="article-container">
   <div class="article">
-    <h1 class="article-title">新博客第一天上线啦</h1>
+    <h1 class="article-title">RocketMq使用过程中踩过的坑</h1>
     <div class="article-info">
       <div class="article-info--item">
         <div class="article-info--info">
           
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列</a>
+          </div>
           
-          <p class="article-info--date">日期：2023-05-02 15:44:48</p>
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/RocketMq/" rel="tag">RocketMq</a>
+          </div>
+          
+          <p class="article-info--date">日期：2023-05-06 20:35:37</p>
         </div>
-        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
+        <img src="/imgs/cover/hhx3.jpg" alt="" class="article-cover">
       </div>
     </div>
     <article class="article-content">
-      <p>它那么可爱，当然要记录一下啦～～</p>
+      <p>无声的消失最为致命，这篇文章就来总结一下前段时间在项目中遇到的一个问题-无声消失的消息，<br>先来看一下业务场景，现在系统A作为消费方，要分别接收来自生产方C的C1消息与C2消息分别来进行处理。<br>这里给出的解决方案是：系统A分别订阅生产方C的C1的topic1 与 C2的topic2.接下来给出一个简单的配置与实现模拟。<br>于是给出了以下配置：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>生产者</th>
+<th>消费方1</th>
+<th>消费方2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>nameSrv</td>
+<td>192.168.0.102:9876</td>
+<td>192.168.0.102:9876</td>
+<td>192.168.0.102:9876</td>
+</tr>
+<tr>
+<td>groupName</td>
+<td>Group_produce</td>
+<td>Group_c</td>
+<td>Group_c</td>
+</tr>
+<tr>
+<td>topic1</td>
+<td>topic1</td>
+<td>topic1</td>
+<td>topic1</td>
+</tr>
+<tr>
+<td>topic2</td>
+<td>topic2</td>
+<td>topic2</td>
+<td>topic2</td>
+</tr>
+</tbody></table>
+<p>写到这里有经验的朋友不知道有没有看出问题所在。下面我将给出该场景的模拟。</p>
+<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><p>这里在本机上使用docker搭建了一个RocketMq的环境模拟，其中搭建教程 <a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_70748381/article/details/126987444">Mac m1搭建Rocket Mq</a>，已经试过完全按照教程来，没问题。其他电脑配置，大家就自行在网上找一些教程吧。</p>
+<h2 id="生产者代码模拟"><a href="#生产者代码模拟" class="headerlink" title="生产者代码模拟"></a>生产者代码模拟</h2><pre class="line-numbers language-none"><code class="language-none">&#x2F;**
+ * 生产者生产消息
+ * @Author gorge
+ * @Version 1.0
+ * @Date 2023&#x2F;5&#x2F;6 20:43
+ **&#x2F;
+public class MqProduceTest &#123;
+    public static DefaultMQProducer producer &#x3D; new DefaultMQProducer(&quot;Group_produce&quot;);
+    @Resource
+    public static void main(String[] args) throws MQClientException &#123;
+        Scanner sc &#x3D; new Scanner(System.in);
+        producer.setRetryTimesWhenSendFailed(3);
+        producer.setNamesrvAddr(&quot;192.168.0.102:9876&quot;);
+        producer.start();
+        String topic&#x3D;&quot;&quot;;
+        String message&#x3D;&quot;&quot;;
+        System.out.println(&quot;开始启动：&quot;);
+        while(true)&#123;
+            System.out.println(&quot;请输入topic:&quot;);
+            topic &#x3D; sc.next();
+            System.out.println(&quot;请输入消息体:&quot;);
+            message &#x3D; sc.next();
+            sendMessage(topic,message);
+        &#125;
+    &#125;
+    public static void sendMessage(String topic,String message)&#123;
+        System.out.println(&quot;topic:&quot;+topic);
+        Message sendMsg &#x3D; new Message(topic,&quot;*&quot;,message.getBytes(StandardCharsets.UTF_8));
+        SendResult sendResult &#x3D; null;
+        try &#123;
+            sendResult &#x3D; producer.send(sendMsg);
+            System.out.println(topic+&quot;end&quot;);
+        &#125; catch (MQClientException | MQBrokerException | RemotingException | InterruptedException e) &#123;
+            System.out.println(e);
+            Thread.currentThread().interrupt();
+        &#125;
+    &#125;
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="消费者A分别订阅两个topic"><a href="#消费者A分别订阅两个topic" class="headerlink" title="消费者A分别订阅两个topic"></a>消费者A分别订阅两个topic</h2><h3 id="消费者A订阅topic1"><a href="#消费者A订阅topic1" class="headerlink" title="消费者A订阅topic1"></a>消费者A订阅topic1</h3><pre class="line-numbers language-none"><code class="language-none">&#x2F;**
+ * @Author gorge
+ * @Version 1.0
+ * @Date 2023&#x2F;5&#x2F;6 20:43
+ **&#x2F;
+public class MqConsumer1 &#123;
+    public static void main(String[] args) throws MQClientException &#123;
+        &#x2F;&#x2F; 创建接收消息的对象
+        DefaultMQPushConsumer consumer &#x3D; new DefaultMQPushConsumer(&quot;Group_c&quot;);
+        consumer.setNamesrvAddr(&quot;192.168.0.102:9876&quot;);
+        consumer.subscribe(&quot;topic1&quot;,&quot;*&quot;);
+        consumer.registerMessageListener(new MessageListenerConcurrently() &#123;
+            @SneakyThrows
+            @Override
+            public ConsumeConcurrentlyStatus consumeMessage(List&lt;MessageExt&gt; list, ConsumeConcurrentlyContext consumeConcurrentlyContext) &#123;
+                for(MessageExt messageExt : list)&#123;
+                    if(messageExt.getReconsumeTimes()&gt;1)&#123;
+                        continue;
+                    &#125;
+                    System.out.println(&quot;0--topic1--x&quot;+(new String(messageExt.getBody(), RemotingHelper.DEFAULT_CHARSET)));
+                &#125;
+                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+            &#125;
+        &#125;);
+        consumer.start();
+    &#125;
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="消费者A来订阅topic2"><a href="#消费者A来订阅topic2" class="headerlink" title="消费者A来订阅topic2"></a>消费者A来订阅topic2</h3><pre class="line-numbers language-none"><code class="language-none">&#x2F;**
+ * @Author gorge
+ * @Version 1.0
+ * @Date 2023&#x2F;5&#x2F;6 20:44
+ **&#x2F;
+public class MqConsumer2 &#123;
+    public static void main(String[] args) throws MQClientException &#123;
+        &#x2F;&#x2F; 创建接收消息的对象
+        DefaultMQPushConsumer consumer &#x3D; new DefaultMQPushConsumer(&quot;Group_c&quot;);
+        consumer.setNamesrvAddr(&quot;192.168.0.102:9876&quot;);
+        consumer.subscribe(&quot;topic2&quot;,&quot;*&quot;);
+        consumer.registerMessageListener(new MessageListenerConcurrently() &#123;
+            @SneakyThrows
+            @Override
+            public ConsumeConcurrentlyStatus consumeMessage(List&lt;MessageExt&gt; list, ConsumeConcurrentlyContext consumeConcurrentlyContext) &#123;
+                for(MessageExt messageExt : list)&#123;
+                    if(messageExt.getReconsumeTimes()&gt;1)&#123;
+                        continue;
+                    &#125;
+                    System.out.println(&quot;0--topic2--x&quot;+(new String(messageExt.getBody(), RemotingHelper.DEFAULT_CHARSET)));
+                &#125;
+                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+            &#125;
+        &#125;);
+        consumer.start();
+    &#125;
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="场景模拟"><a href="#场景模拟" class="headerlink" title="场景模拟"></a>场景模拟</h2><h3 id="生产者生产消息"><a href="#生产者生产消息" class="headerlink" title="生产者生产消息"></a>生产者生产消息</h3><pre class="line-numbers language-none"><code class="language-none">开始启动：
+请输入topic:
+topic1
+请输入消息体:
+topic1mes_2
+请输入topic:
+topic2
+请输入消息体:
+topic2mes_2
+请输入topic:
+topic1
+请输入消息体:
+topic1mes_3
+请输入topic:
+topic1
+请输入消息体:
+topic1mes_4
+请输入topic:
+topic2
+请输入消息体:
+topic2mes_3
+请输入topic:
+topic2
+请输入消息体:
+topic2mes_4<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="消费者消费消息"><a href="#消费者消费消息" class="headerlink" title="消费者消费消息"></a>消费者消费消息</h3><blockquote>
+<p>消费者MqConsumer1 订阅的topic1获取到的消息</p>
+</blockquote>
+<pre class="line-numbers language-none"><code class="language-none">0--topic1--xtopic1mes_1
+0--topic1--xtopic1mes_2
+0--topic1--xtopic1mes_4
+0--topic1--xtopic2mes_3
+0--topic1--xtopic2mes_1<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>消费者MqConsumer2 订阅的topic2获取到的消息</p>
+</blockquote>
+<pre class="line-numbers language-none"><code class="language-none">0--topic2--xtopic2mes_1
+0--topic2--xtopic1mes_3
+0--topic2--xtopic2mes_4
+0--topic2--xtopic2mes_2<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>看到这里相信大家应该都发现了一个奇怪的现象—&gt;消费组1订阅的topic1,但是却消费到了topic2的内容。消费组2订阅的topic2,但是却消费带了topic1的内容，导致了消费内容混乱。</p>
+<h2 id="RocketMq的消费模型"><a href="#RocketMq的消费模型" class="headerlink" title="RocketMq的消费模型"></a>RocketMq的消费模型</h2><p>有了上面的现象，凭脑袋在那里空想肯定是没有用的。所以对RockerMq的消费模型进行了回顾，看了一些资料。<br>RocketMq是标准的发布-订阅模型。</p>
+<p><img src="/imgs/3-1.png" alt="6a68ec823ec71668a9a2aee3076c23e6.png"><br>在发布 - 订阅模型中，消息的发送方称为发布者（Publisher），消息的接收方称为订阅者（Subscriber），服务端存放消息的容器称为主题（Topic）。发布者将消息发送到主题中，订阅者在接收消息之前需要先“订阅主题”。<br>我的理解可能也到此为止了。<strong>所以想当然的认为消费组名只是为了标识该消费组，真正起作用的是该消费组订阅的主题。</strong><br>下面找了一张RocketMq的消费图解。<br><img src="/imgs/3-2.png" alt="fca678d06306b67206bf51e8c00a74e4.png"></p>
+<p>RocketMQ中，订阅者的概念是通过消费组（Consumer Group）来体现的。每个消费组都消费主题中一份完整的消息，不同消费组之间消费进度彼此不受影响。但是<strong>消费组中包含多个消费者，同一个组内的消费者是竞争消费的关系，每个消费者负责消费组内的一部分消息。如果一条消息被消费者 Consumer1 消费了，那同组的其他消费者就不会再收到这条消息</strong></p>
+<blockquote>
+<p>但是我们上面出现的现象是用topic对消息进行了区分，还依然出现消费混乱的现象。这里就要引出一个概念<strong>订阅关系一致性</strong><br>订阅关系的一致性是指同一个消费组下所有的Consumer实例所订阅的Topic与Tag以及对消息的处理逻辑必须完全一致。否则，消息消费的逻辑就会混乱，甚至导致消息消失。</p>
+</blockquote>
+<h2 id="解决方案及总结"><a href="#解决方案及总结" class="headerlink" title="解决方案及总结"></a>解决方案及总结</h2><p>经过上述分析，是因为前期的配置违背了订阅关系一致性的原则，将配置中的消费组名加以区分，问题解决。<br>因此，在使用RocketMq的时候，从消费者的角度来讲，我们要设计多个消费者组订阅了多个Topic,并且每个消费者组里面的多个消费者实例的订阅关系需要保持一致。</p>
+<h2 id="问题："><a href="#问题：" class="headerlink" title="问题："></a>问题：</h2><p>RocketMq中的tag可以过滤需要处理的消息，那么我们是不是可以违背订阅关系一致性，在消息层面使用tag进行区分呢？</p>
 
     </article>
     
     <div class="read-nums">
       <!-- id 将作为查询条件 -->
-      <span id="log/新博客第一天上线啦.html" class="leancloud_visitors" data-flag-title="Your Article Title">
+      <span id="2023/05/06/RocketMq使用过程中踩过的坑/" class="leancloud_visitors" data-flag-title="Your Article Title">
         <em class="post-meta-item-text">浏览量</em>
         <i class="leancloud-visitors-count"></i>
       </span>
@@ -405,8 +599,18 @@ pre:active {
     <div class="article-catelogue--wrapper">
       <div class="catelogue catelogue-1">
         <h3>目录</h3>
-        
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="toc-number">1.</span> <span class="toc-text">环境配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85%E4%BB%A3%E7%A0%81%E6%A8%A1%E6%8B%9F"><span class="toc-number">2.</span> <span class="toc-text">生产者代码模拟</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85A%E5%88%86%E5%88%AB%E8%AE%A2%E9%98%85%E4%B8%A4%E4%B8%AAtopic"><span class="toc-number">3.</span> <span class="toc-text">消费者A分别订阅两个topic</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85A%E8%AE%A2%E9%98%85topic1"><span class="toc-number">3.1.</span> <span class="toc-text">消费者A订阅topic1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85A%E6%9D%A5%E8%AE%A2%E9%98%85topic2"><span class="toc-number">3.2.</span> <span class="toc-text">消费者A来订阅topic2</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E6%A8%A1%E6%8B%9F"><span class="toc-number">4.</span> <span class="toc-text">场景模拟</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85%E7%94%9F%E4%BA%A7%E6%B6%88%E6%81%AF"><span class="toc-number">4.1.</span> <span class="toc-text">生产者生产消息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85%E6%B6%88%E8%B4%B9%E6%B6%88%E6%81%AF"><span class="toc-number">4.2.</span> <span class="toc-text">消费者消费消息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RocketMq%E7%9A%84%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%9E%8B"><span class="toc-number">5.</span> <span class="toc-text">RocketMq的消费模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E5%8F%8A%E6%80%BB%E7%BB%93"><span class="toc-number">6.</span> <span class="toc-text">解决方案及总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="toc-number">7.</span> <span class="toc-text">问题：</span></a></li></ol>
       </div>
+      
+        <div class="catelogue catelogue-2">
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2023/05/03/SQL语句分析与优化/">SQL语句分析与优化</a>
+            </p>
+          
+        </div>
       
     </div>
   </div>
@@ -426,7 +630,7 @@ pre:active {
     recordIP: config.recordIP,
     visitor: config.visitor,
     enableQQ: config.enableQQ,
-    path: 'log/新博客第一天上线啦.html'
+    path: '2023/05/06/RocketMq使用过程中踩过的坑/'
   })
 </script>
 
