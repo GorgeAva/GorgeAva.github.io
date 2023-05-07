@@ -193,7 +193,7 @@
   const ipt = document.querySelector('#search-input')
   const btn = document.querySelector('#search-btn')
   const layer = document.querySelector('#search-layer')
-  const posts = JSON.parse(`[{"title":"RocketMq使用过程中踩过的坑","cover":"/imgs/cover/hhx3.jpg","path":"2023/05/06/RocketMq使用过程中踩过的坑/"},{"title":"如何快速定位Http问题-Network面板请求与响应","cover":"/imgs/cover/hhx.jpg","path":"2023/05/02/如何快速定位Http问题-Network面板请求与响应/"},{"title":"SQL语句分析与优化","cover":"/imgs/cover/hhx2.png","path":"2023/05/03/SQL语句分析与优化/"},{"title":"博客迁移","path":"2023/05/02/开始/"}]`)
+  const posts = JSON.parse(`[{"title":"SQL语句分析与优化","cover":"/imgs/cover/hhx2.png","path":"2023/05/03/SQL语句分析与优化/"},{"title":"RocketMq使用过程中踩过的坑","cover":"/imgs/cover/hhx3.jpg","path":"2023/05/06/RocketMq使用过程中踩过的坑/"},{"title":"如何快速定位Http问题-Network面板请求与响应","cover":"/imgs/cover/hhx.jpg","path":"2023/05/02/如何快速定位Http问题-Network面板请求与响应/"},{"title":"博客迁移","path":"2023/05/02/开始/"}]`)
   ipt.addEventListener('keyup', e => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -419,12 +419,12 @@ pre:active {
 <td>topic1</td>
 <td>topic1</td>
 <td>topic1</td>
-<td>topic1</td>
+<td></td>
 </tr>
 <tr>
 <td>topic2</td>
 <td>topic2</td>
-<td>topic2</td>
+<td></td>
 <td>topic2</td>
 </tr>
 </tbody></table>
@@ -571,7 +571,7 @@ topic2mes_4<span aria-hidden="true" class="line-numbers-rows"><span></span><span
 
 <p>看到这里相信大家应该都发现了一个奇怪的现象—&gt;消费组1订阅的topic1,但是却消费到了topic2的内容。消费组2订阅的topic2,但是却消费带了topic1的内容，导致了消费内容混乱。</p>
 <h2 id="RocketMq的消费模型"><a href="#RocketMq的消费模型" class="headerlink" title="RocketMq的消费模型"></a>RocketMq的消费模型</h2><p>有了上面的现象，凭脑袋在那里空想肯定是没有用的。所以对RockerMq的消费模型进行了回顾，看了一些资料。<br>RocketMq是标准的发布-订阅模型。</p>
-<p><img src="/imgs/3-1.png" alt="6a68ec823ec71668a9a2aee3076c23e6.png"><br>在发布 - 订阅模型中，消息的发送方称为发布者（Publisher），消息的接收方称为订阅者（Subscriber），服务端存放消息的容器称为主题（Topic）。发布者将消息发送到主题中，订阅者在接收消息之前需要先“订阅主题”。<br>我的理解可能也到此为止了。<strong>所以想当然的认为消费组名只是为了标识该消费组，真正起作用的是该消费组订阅的主题。</strong><br>下面找了一张RocketMq的消费图解。<br><img src="/imgs/3-2.png" alt="fca678d06306b67206bf51e8c00a74e4.png"></p>
+<p><img src="/imgs/posts/4-1.png" alt="6a68ec823ec71668a9a2aee3076c23e6.png"><br>在发布 - 订阅模型中，消息的发送方称为发布者（Publisher），消息的接收方称为订阅者（Subscriber），服务端存放消息的容器称为主题（Topic）。发布者将消息发送到主题中，订阅者在接收消息之前需要先“订阅主题”。<br>我的理解可能也到此为止了。<strong>所以想当然的认为消费组名只是为了标识该消费组，真正起作用的是该消费组订阅的主题。</strong><br>下面找了一张RocketMq的消费图解。<br><img src="/imgs/posts/4-2.png" alt="fca678d06306b67206bf51e8c00a74e4.png"></p>
 <p>RocketMQ中，订阅者的概念是通过消费组（Consumer Group）来体现的。每个消费组都消费主题中一份完整的消息，不同消费组之间消费进度彼此不受影响。但是<strong>消费组中包含多个消费者，同一个组内的消费者是竞争消费的关系，每个消费者负责消费组内的一部分消息。如果一条消息被消费者 Consumer1 消费了，那同组的其他消费者就不会再收到这条消息</strong></p>
 <blockquote>
 <p>但是我们上面出现的现象是用topic对消息进行了区分，还依然出现消费混乱的现象。这里就要引出一个概念<strong>订阅关系一致性</strong><br>订阅关系的一致性是指同一个消费组下所有的Consumer实例所订阅的Topic与Tag以及对消息的处理逻辑必须完全一致。否则，消息消费的逻辑就会混乱，甚至导致消息消失。</p>
