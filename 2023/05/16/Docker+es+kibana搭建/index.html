@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>我的技术与生活——岁月静好 | Hexo</title>
+  <title>我的技术与生活——Docker+es+kibana搭建 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/css/public.css" />
@@ -16,7 +16,7 @@
 
   <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
   <script>
-    document.title = `我的技术与生活——岁月静好`
+    document.title = `我的技术与生活——Docker+es+kibana搭建`
   </script>
 <meta name="generator" content="Hexo 6.3.0"></head>
 
@@ -371,25 +371,145 @@ pre:active {
 
 <div class="article-container">
   <div class="article">
-    <h1 class="article-title">岁月静好</h1>
+    <h1 class="article-title">Docker+es+kibana搭建</h1>
     <div class="article-info">
       <div class="article-info--item">
         <div class="article-info--info">
           
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E8%BF%90%E7%BB%B4/">运维</a>
+          </div>
           
-          <p class="article-info--date">日期：2023-05-09 21:07:55</p>
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/Docker/" rel="tag">Docker</a><a class="tag-link" href="/tags/ES/" rel="tag">ES</a><a class="tag-link" href="/tags/%E4%B8%AD%E9%97%B4%E4%BB%B6/" rel="tag">中间件</a><a class="tag-link" href="/tags/%E5%AE%B9%E5%99%A8/" rel="tag">容器</a>
+          </div>
+          
+          <p class="article-info--date">日期：2023-05-16 22:00:51</p>
         </div>
-        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
+        <img src="/imgs/cover/hhx4.jpg" alt="" class="article-cover">
       </div>
     </div>
     <article class="article-content">
-      <p><img src="/imgs/log/ximashichang.jpeg" alt="../imgs/log/ximashichang.jpeg"><br>长大后，你会发现所谓的岁月静好，不过是家中那碗热汤和始终为你亮着的那盏灯。<br>                                 ——傅雷《傅雷家书》‍</p>
+      <p>最近在网上看到一个博客项目，正好用到了最近想学的知识，所以准备跟着做一下。自己做项目那环境必须自己搭对不对？刚开始就碰壁了，哈哈哈哈</p>
+<h2 id="背景及简介"><a href="#背景及简介" class="headerlink" title="背景及简介"></a>背景及简介</h2><p>博客项目需要实现一个搜索引擎，技术选型就选择了ES，Kibana则是针对ES的开源分析及可视化平台，用来搜索、查看交互存储在ES搜索引擎中的数据，kibana可以通过各种图表进行高级数据分析及展示，基于浏览器的界面可以快速创建仪表盘，实时显示查询动态。在docker容器中直接pull到的kibana无法更改kibana.yml文件，真的是无了个大语。latested版本使用的Debian系统，并且镜像文件中无法使用vim命令。因此，我就按照常规的解决方式，执行命令<code>apt-get update</code>,然后在执行<code>apt-get install vim</code>，这时候是会报错镜像源使用错误。于是在网上找了大量的解决方案如何设置Debian的镜像源以及如何正确安装vim，大多数的解决方案是让我们<strong>vim &#x2F;etc&#x2F;apt&#x2F;sources.list</strong>，真是无语哈。我本来就是没有vim命令，结果还要让我使用vim命令去编辑配置文件安装vim命令。不知道写博客的童鞋是怎么想的哈！！！还是我这边理解的有什么错误，欢迎大家指正。现在感觉是自相矛盾的～～<br>综上所述，项目搭建遇到两个问题<br>第一，容器内文件不可直接编辑，如何正确启动容器<br>第二，kibana需要保证与es进行通信。</p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>Docker容器是有数据卷这个概念的。docker是将应用和环境一块打包成一个镜像！如果数据也在镜像中，那么容器如果删除了，数据也会跟着删除。<br>需求：数据可以持久化<br>容器之间就需要有一个数据共享的技术!Docker容器中产生的数据，同步到本地！这就是卷的技术！目的是挂载，将容器内的目录挂载到Linux&#x2F;其他宿主机上面。容器间也是数据共享的！因此，在容器启动的时候，可以使用<strong>容器卷挂载</strong>的方式。<br>另外，Kibana需要与ES通，因此需要保障两个容器是能够互相通信的，这里就需要使用<strong>Docker网络</strong>相关的技术。</p>
+<h2 id="Docker容器间"><a href="#Docker容器间" class="headerlink" title="Docker容器间"></a>Docker容器间</h2><p>刚刚有说到Docker容器数据持久化的问题，本质的解决方案就是把数据保存在宿主机上，然后让宿主机与容器共享数据，docker中提供了两种解决方案。</p>
+<h3 id="数据卷挂载"><a href="#数据卷挂载" class="headerlink" title="数据卷挂载"></a>数据卷挂载</h3><p>直接使用命令挂载 -v (该参数可以连续使用，同时挂载多个目录)</p>
+<blockquote>
+<p>docker run -it -v 主机目录：容器内目录 镜像名称 [其他命令]</p>
+</blockquote>
+<pre class="line-numbers language-none"><code class="language-none">比如将容器centos的home 目录挂载到 主机的home&#x2F;ceshi 目录
+1. 执行挂载命令
+docker run -it -v &#x2F;home&#x2F;ceshi:&#x2F;home centos &#x2F;bin&#x2F;bash
+2.查看详细信息
+docker inspect 20c7cad5d91c
+会出现如下字样，就表示挂载成功了
+&quot;Mounts&quot;: [
+            &#123;
+                &quot;Type&quot;: &quot;bind&quot;,
+                &quot;Source&quot;: &quot;&#x2F;home&#x2F;ceshi&quot;,  &#x2F;&#x2F;主机地址
+                &quot;Destination&quot;: &quot;&#x2F;home&quot;,   &#x2F;&#x2F;容器内地址
+                &quot;Mode&quot;: &quot;&quot;,
+                &quot;RW&quot;: true,
+                &quot;Propagation&quot;: &quot;rprivate&quot;
+            &#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>通过使用数据卷的技术，当容器停止的时候，主机上修改内容，容器内的内容也会跟着改变。<br>挂载的方式分为三种，一种是匿名挂载，一种是具名挂载，还可以指定具体路径挂载。</p>
+<ol>
+<li>-v 容器内路径 #匿名挂载</li>
+<li>-v 卷名:容器内路径 #具名挂载</li>
+<li>-v &#x2F;主机目录：&#x2F;容器内目录 # 指定路径挂载<br>其中，指定路径挂载比较好理解，下面来看一下匿名与具名挂载的方式。</li>
+</ol>
+<h4 id="匿名挂载"><a href="#匿名挂载" class="headerlink" title="匿名挂载"></a>匿名挂载</h4><pre class="line-numbers language-none"><code class="language-none">1.在使用 -v 的时候只是使用 容器内路径，不写主机的目录
+docker run -it -v :&#x2F;home centos &#x2F;bin&#x2F;bash
+
+2. 使用docker volume ls 查看卷的使用情况（这里会发现所有的路径都是加密的，无法使用）
+DRIVER    VOLUME NAME
+local     5ba2ea0173a86d839d55f2c0d3bed0277f7f1178f79e0b8b0be9549b1c3850b3
+local     0071643dc6d89383d5c76a2f36d9b2dfa76d86007f458c0aa69ac338d2f57dcb
+local     662636764a35685a6cafaedf7931bb094bb7cd72092169d156fe1be10be86045
+local     dd0254fee82706f5ebf4e00eb3f3d0ac6d1c772170eb8fbc051741d104dd4545<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h4 id="具名挂载"><a href="#具名挂载" class="headerlink" title="具名挂载"></a>具名挂载</h4><pre class="line-numbers language-none"><code class="language-none">1. 启动容器的时候设置需要挂载的目录为具名挂载
+docker run -it -v juming-nginx:&#x2F;home centos &#x2F;bin&#x2F;bash
+
+2. 使用docker volume ls 查看挂载卷的使用情况docker volume ls （这里可以看到我们挂载的卷的位置信息）
+local     e655a3a7c74fc13ef83bdc5e29c7951aa3b3f2a0d932b13a40cf7ca575ef003e
+local     juming-nginx
+3. 使用docker volume inspect juming-nginx 查看我们挂载信息的具体内容
+[
+    &#123;
+        &quot;CreatedAt&quot;: &quot;209:02:47+08:00&quot;,
+        &quot;Driver&quot;: &quot;local&quot;,
+        &quot;Labels&quot;: null,
+        &quot;Mountpoint&quot;: &quot;&#x2F;var&#x2F;lib&#x2F;docker&#x2F;volumes&#x2F;juming-nginx&#x2F;_data&quot;,
+        &quot;Name&quot;: &quot;juming-nginx&quot;,
+        &quot;Options&quot;: null,
+        &quot;Scope&quot;: &quot;local&quot;
+    &#125;
+]
+可以看到&quot;Mountpoint&quot;: &quot;&#x2F;var&#x2F;lib&#x2F;docker&#x2F;volumes&#x2F;juming-nginx&#x2F;_data&quot;, 就是我们挂载的具体目录
+进入该目录就可以看到我们具体的挂载信息。
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="DockerFile"><a href="#DockerFile" class="headerlink" title="DockerFile"></a>DockerFile</h3><p>Dockerfile 就是用来构建docker 镜像的构建文件！<br>相当于手工制作了一个镜像，实际上就是一段命令脚本，将命令脚本启动执行。<br>通过这个脚本可以生成一个镜像~~镜像是一层一层的，脚本就是一个一个的命令，每个命令都是一层。<br>编写一个脚本 vim dockerfile1</p>
+<pre class="line-numbers language-none"><code class="language-none">FROM centos
+
+
+VOLUME [&quot;volume01&quot;,&quot;volume02&quot;]
+
+
+CMD echo &quot;----end----&quot;
+CMD &#x2F;bin&#x2F;bash
+
+931968626<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>执行build 命令进行构建镜像 docker build -f dockerfile1 -t grogetestcent&#x2F;centos .<br>注意这里要小写，镜像名称前面不能添加斜杠<br>查看一下镜像的详细信<em><strong>docker inspect accc2377655f</strong></em></p>
+<pre class="line-numbers language-none"><code class="language-none">可以发现Mounts 中已经包好挂载目录
+&quot;Mounts&quot;: [
+            &#123;
+                &quot;Type&quot;: &quot;volume&quot;,
+                &quot;Name&quot;: &quot;f4550a5f11fb7a94ec47fe931609f34547a782a059e3cd0fcbd3a8f8ca179854&quot;,
+                &quot;Source&quot;: &quot;&#x2F;var&#x2F;lib&#x2F;docker&#x2F;volumes&#x2F;f4550a5f11fb7a94ec47fe931609f34547a782a059e3cd0fcbd3a8f8ca179854&#x2F;_data&quot;,
+                &quot;Destination&quot;: &quot;volume01&quot;,
+                &quot;Driver&quot;: &quot;local&quot;,
+                &quot;Mode&quot;: &quot;&quot;,
+                &quot;RW&quot;: true,
+                &quot;Propagation&quot;: &quot;&quot;
+            &#125;,
+            &#123;
+                &quot;Type&quot;: &quot;volume&quot;,
+                &quot;Name&quot;: &quot;44cc8d65408fb1f99087339a02c675df26918de6a72167133b158f5f54d8f341&quot;,
+                &quot;Source&quot;: &quot;&#x2F;var&#x2F;lib&#x2F;docker&#x2F;volumes&#x2F;44cc8d65408fb1f99087339a02c675df26918de6a72167133b158f5f54d8f341&#x2F;_data&quot;,
+                &quot;Destination&quot;: &quot;volume02&quot;,
+                &quot;Driver&quot;: &quot;local&quot;,
+                &quot;Mode&quot;: &quot;&quot;,
+                &quot;RW&quot;: true,
+                &quot;Propagation&quot;: &quot;&quot;
+            &#125;
+        ],<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="Docker网络"><a href="#Docker网络" class="headerlink" title="Docker网络"></a>Docker网络</h2><p>上面介绍解决了第一个配置文件的问题,现在查看一下两个容器的地址是多少<em><strong>docker exec -it kibana2 ip addr</strong></em><br>kibana2 : inet 172.17.0.3&#x2F;16<br>es : inet 172.17.0.2&#x2F;16<br>可以发现这两个容器的网络是在同一个网段上的，ping一下也是可以ping通的。所以配置es的地址时，这里可以配置成固定ip。</p>
+<h3 id="–link"><a href="#–link" class="headerlink" title="–link"></a>–link</h3><p>如果ip地址变换了，在启动kibana的时候，又要重新配置一下配置文件。那么直接ping一下es的名称是不是可以ping通呢。</p>
+<p>经过测试，是ping不通的。</p>
+<pre class="line-numbers language-none"><code class="language-none">docker exec -it kibana2 ping es
+ping: es: Name or service not known<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>针对这个问题，可以通过使用–link命令进行启动。</p>
+<h2 id="正确启动"><a href="#正确启动" class="headerlink" title="正确启动"></a>正确启动</h2><p>经过上述过程的探索，docker容器正确启动kibana的过程可以总结如下：</p>
+<ol>
+<li>第一次启动kibana获取kibana.yml配置文件，可以使用whereis kibana.yml命令找到配置问题</li>
+<li>本地创建一个挂载目录，并创建kibana.yml配置文件，配置来源第一步</li>
+<li>修改配置文件中的<code>server.port</code>,<code>server.host</code>,<code>elasticsearch.url</code>,<code>elasticsearch.startupTimeout</code></li>
+<li>执行如下命令重新开启kibaba<pre class="line-numbers language-none"><code class="language-none">docker run --name kibana2 -p 5601:5601 --link es -v &#x2F;Users&#x2F;gorge&#x2F;Desktop&#x2F;dockerKibana&#x2F;kibana.yml:&#x2F;etc&#x2F;kibana&#x2F;kibana.yml -d kibana<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre></li>
+<li>访问<a target="_blank" rel="noopener" href="http://localhost:5601/">http://localhost:5601/</a> 即可</li>
+</ol>
 
     </article>
     
     <div class="read-nums">
       <!-- id 将作为查询条件 -->
-      <span id="log/岁月静好.html" class="leancloud_visitors" data-flag-title="Your Article Title">
+      <span id="2023/05/16/Docker+es+kibana搭建/" class="leancloud_visitors" data-flag-title="Your Article Title">
         <em class="post-meta-item-text">浏览量</em>
         <i class="leancloud-visitors-count"></i>
       </span>
@@ -405,8 +525,23 @@ pre:active {
     <div class="article-catelogue--wrapper">
       <div class="catelogue catelogue-1">
         <h3>目录</h3>
-        
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF%E5%8F%8A%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">背景及简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">2.</span> <span class="toc-text">解决方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker%E5%AE%B9%E5%99%A8%E9%97%B4"><span class="toc-number">3.</span> <span class="toc-text">Docker容器间</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%8D%B7%E6%8C%82%E8%BD%BD"><span class="toc-number">3.1.</span> <span class="toc-text">数据卷挂载</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8C%BF%E5%90%8D%E6%8C%82%E8%BD%BD"><span class="toc-number">3.1.1.</span> <span class="toc-text">匿名挂载</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%B7%E5%90%8D%E6%8C%82%E8%BD%BD"><span class="toc-number">3.1.2.</span> <span class="toc-text">具名挂载</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DockerFile"><span class="toc-number">3.2.</span> <span class="toc-text">DockerFile</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker%E7%BD%91%E7%BB%9C"><span class="toc-number">4.</span> <span class="toc-text">Docker网络</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%80%93link"><span class="toc-number">4.1.</span> <span class="toc-text">–link</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E7%A1%AE%E5%90%AF%E5%8A%A8"><span class="toc-number">5.</span> <span class="toc-text">正确启动</span></a></li></ol>
       </div>
+      
+        <div class="catelogue catelogue-2">
+          
+            <p>
+              <span>上一篇：</span>
+              <a href="/2023/05/18/开发工具、插件探索-持续更新ing/">开发工具、插件探索:持续更新ing</a>
+            </p>
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2023/05/06/RocketMq使用过程中踩过的坑-混乱的消费/">RocketMq使用过程中踩过的坑-混乱的消费</a>
+            </p>
+          
+        </div>
       
     </div>
   </div>
@@ -426,7 +561,7 @@ pre:active {
     recordIP: config.recordIP,
     visitor: config.visitor,
     enableQQ: config.enableQQ,
-    path: 'log/岁月静好.html'
+    path: '2023/05/16/Docker+es+kibana搭建/'
   })
 </script>
 
