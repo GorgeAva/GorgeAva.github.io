@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>我的技术与生活——数据库业务积累 | Hexo</title>
+  <title>我的技术与生活——数据库业务积累ing | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/css/public.css" />
@@ -16,7 +16,7 @@
 
   <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
   <script>
-    document.title = `我的技术与生活——数据库业务积累`
+    document.title = `我的技术与生活——数据库业务积累ing`
   </script>
 <meta name="generator" content="Hexo 6.3.0"></head>
 
@@ -193,7 +193,7 @@
   const ipt = document.querySelector('#search-input')
   const btn = document.querySelector('#search-btn')
   const layer = document.querySelector('#search-layer')
-  const posts = JSON.parse(`[{"title":"Docker+es+kibana搭建","cover":"/imgs/cover/hhx4.png","path":"2023/05/16/Docker+es+kibana搭建/"},{"title":"SQL语句分析与优化","cover":"/imgs/cover/hhx2.png","path":"2023/05/03/SQL语句分析与优化/"},{"title":"RocketMq使用过程中踩过的坑-混乱的消费","cover":"/imgs/cover/hhx3.jpg","path":"2023/05/06/RocketMq使用过程中踩过的坑-混乱的消费/"},{"title":"如何快速定位Http问题-Network面板请求与响应","cover":"/imgs/cover/hhx.jpg","path":"2023/05/02/如何快速定位Http问题-Network面板请求与响应/"},{"title":"博客迁移","path":"2023/05/02/开始/"},{"title":"开发工具、插件探索:持续更新ing","path":"2023/05/18/开发工具、插件探索-持续更新ing/"},{"title":"数据库业务积累","path":"2023/05/18/数据库业务积累/"}]`)
+  const posts = JSON.parse(`[{"title":"Docker+es+kibana搭建","cover":"/imgs/cover/hhx4.png","path":"2023/05/16/Docker+es+kibana搭建/"},{"title":"SQL语句分析与优化","cover":"/imgs/cover/hhx2.png","path":"2023/05/03/SQL语句分析与优化/"},{"title":"RocketMq使用过程中踩过的坑-混乱的消费","cover":"/imgs/cover/hhx3.jpg","path":"2023/05/06/RocketMq使用过程中踩过的坑-混乱的消费/"},{"title":"如何快速定位Http问题-Network面板请求与响应","cover":"/imgs/cover/hhx.jpg","path":"2023/05/02/如何快速定位Http问题-Network面板请求与响应/"},{"title":"博客迁移","path":"2023/05/02/开始/"},{"title":"开发工具、插件探索:持续更新ing","path":"2023/05/18/开发工具、插件探索-持续更新ing/"},{"title":"数据库业务积累ing","path":"2023/05/18/数据库业务积累/"},{"title":"浅谈业务数据一致性与完整性如何保障","path":"2023/05/23/浅谈业务数据一致性与完整性如何保障/"}]`)
   ipt.addEventListener('keyup', e => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -327,7 +327,7 @@
       </h5>
       <p class="main-left--subtitle">
         <span>文章数目：</span>
-        <span>7 篇</span>
+        <span>8 篇</span>
       </p>
       <p class="main-left--subtitle">
         <span>最近动态：</span>
@@ -335,7 +335,7 @@
       </p>
       <p class="main-left--subtitle">
         <span>上线时间：</span>
-        <span>21天</span>
+        <span>22天</span>
       </p>
       <p class="main-left--subtitle">
         <span>当前版本：</span>
@@ -371,7 +371,7 @@ pre:active {
 
 <div class="article-container">
   <div class="article">
-    <h1 class="article-title">数据库业务积累</h1>
+    <h1 class="article-title">数据库业务积累ing</h1>
     <div class="article-info">
       <div class="article-info--item">
         <div class="article-info--info">
@@ -393,7 +393,10 @@ pre:active {
       </div>
     </div>
     <article class="article-content">
-      <p>场景一：使用建立了索引字段进行内&#x2F;外链接索引失效场景</p>
+      <h1 id="场景一：使用建立了索引字段进行内-x2F-外链接索引失效场景"><a href="#场景一：使用建立了索引字段进行内-x2F-外链接索引失效场景" class="headerlink" title="场景一：使用建立了索引字段进行内&#x2F;外链接索引失效场景"></a>场景一：使用建立了索引字段进行内&#x2F;外链接索引失效场景</h1><p>这里创建了两张表做个例子：<br>表一test1： 包含字段id(自增主键),test2_id(外键)<br>表二test2：包含字段id(自增主键)，name</p>
+<pre class="line-numbers language-none"><code class="language-none">ALTER TABLE &#96;testDB&#96;.&#96;test1&#96; 
+ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFERENCES &#96;testDB&#96;.&#96;test2&#96; (&#96;id&#96;);<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>接下来</p>
 
     </article>
     
@@ -415,10 +418,15 @@ pre:active {
     <div class="article-catelogue--wrapper">
       <div class="catelogue catelogue-1">
         <h3>目录</h3>
-        
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E4%B8%80%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%BB%BA%E7%AB%8B%E4%BA%86%E7%B4%A2%E5%BC%95%E5%AD%97%E6%AE%B5%E8%BF%9B%E8%A1%8C%E5%86%85-x2F-%E5%A4%96%E9%93%BE%E6%8E%A5%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88%E5%9C%BA%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">场景一：使用建立了索引字段进行内&#x2F;外链接索引失效场景</span></a></li></ol>
       </div>
       
         <div class="catelogue catelogue-2">
+          
+            <p>
+              <span>上一篇：</span>
+              <a href="/2023/05/23/浅谈业务数据一致性与完整性如何保障/">浅谈业务数据一致性与完整性如何保障</a>
+            </p>
            
           
             <p>
