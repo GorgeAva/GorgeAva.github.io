@@ -193,7 +193,7 @@
   const ipt = document.querySelector('#search-input')
   const btn = document.querySelector('#search-btn')
   const layer = document.querySelector('#search-layer')
-  const posts = JSON.parse(`[{"title":"Docker+es+kibana搭建","cover":"/imgs/cover/hhx4.png","path":"2023/05/16/Docker+es+kibana搭建/"},{"title":"RocketMq使用过程中踩过的坑-混乱的消费","cover":"/imgs/cover/hhx3.jpg","path":"2023/05/06/RocketMq使用过程中踩过的坑-混乱的消费/"},{"title":"SQL语句分析与优化","cover":"/imgs/cover/hhx2.png","path":"2023/05/03/SQL语句分析与优化/"},{"title":"如何快速定位Http问题-Network面板请求与响应","cover":"/imgs/cover/hhx.jpg","path":"2023/05/02/如何快速定位Http问题-Network面板请求与响应/"},{"title":"开发工具、插件探索:持续更新ing","path":"2023/05/18/开发工具、插件探索-持续更新ing/"},{"title":"博客迁移","path":"2023/05/02/开始/"},{"title":"数据库业务积累ing","path":"2023/05/18/数据库业务积累/"},{"title":"浅谈业务数据一致性与完整性如何保障","path":"2023/05/23/浅谈业务数据一致性与完整性如何保障/"},{"title":"阿里Canal实现Mysql异构数据同步","path":"2023/05/24/阿里Canal实现Mysql异构数据同步/"}]`)
+  const posts = JSON.parse(`[{"title":"Docker+es+kibana搭建","cover":"/imgs/cover/hhx4.png","path":"2023/05/16/Docker+es+kibana搭建/"},{"title":"RocketMq使用过程中踩过的坑-混乱的消费","cover":"/imgs/cover/hhx3.jpg","path":"2023/05/06/RocketMq使用过程中踩过的坑-混乱的消费/"},{"title":"SQL语句分析与优化","cover":"/imgs/cover/hhx2.png","path":"2023/05/03/SQL语句分析与优化/"},{"title":"如何快速定位Http问题-Network面板请求与响应","cover":"/imgs/cover/hhx.jpg","path":"2023/05/02/如何快速定位Http问题-Network面板请求与响应/"},{"title":"开发工具、插件探索:持续更新ing","path":"2023/05/18/开发工具、插件探索-持续更新ing/"},{"title":"博客迁移","path":"2023/05/02/开始/"},{"title":"浅谈业务数据一致性与完整性如何保障","path":"2023/05/23/浅谈业务数据一致性与完整性如何保障/"},{"title":"数据库业务积累ing","path":"2023/05/18/数据库业务积累/"},{"title":"阿里Canal实现Mysql异构数据同步","path":"2023/05/24/阿里Canal实现Mysql异构数据同步/"}]`)
   ipt.addEventListener('keyup', e => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -406,7 +406,8 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <th>id</th>
 <th>select_type</th>
 <th>table</th>
-<th>partitions	type</th>
+<th>partitions</th>
+<th>type</th>
 <th>possible_keys</th>
 <th>key</th>
 <th>key_len</th>
@@ -428,6 +429,7 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <td></td>
 <td>2</td>
 <td>100.00</td>
+<td>Using index</td>
 </tr>
 <tr>
 <td>1</td>
@@ -441,6 +443,7 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <td></td>
 <td>2</td>
 <td>100.00</td>
+<td>Using where; Using join buffer (hash join)</td>
 </tr>
 </tbody></table>
 <ol start="2">
@@ -452,7 +455,8 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <th>id</th>
 <th>select_type</th>
 <th>table</th>
-<th>partitions	type</th>
+<th>partitions</th>
+<th>type</th>
 <th>possible_keys</th>
 <th>key</th>
 <th>key_len</th>
@@ -470,7 +474,8 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <td>const</td>
 <td>PRIMARY</td>
 <td>PRIMARY</td>
-<td>4	const</td>
+<td>4</td>
+<td>const</td>
 <td>1</td>
 <td>100.00</td>
 <td></td>
@@ -487,6 +492,7 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <td>const</td>
 <td>1</td>
 <td>100.00</td>
+<td></td>
 </tr>
 </tbody></table>
 <ol start="3">
@@ -498,7 +504,8 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <th>id</th>
 <th>select_type</th>
 <th>table</th>
-<th>partitions	type</th>
+<th>partitions</th>
+<th>type</th>
 <th>possible_keys</th>
 <th>key</th>
 <th>key_len</th>
@@ -520,6 +527,7 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <td>const</td>
 <td>1</td>
 <td>100.00</td>
+<td>Using index</td>
 </tr>
 <tr>
 <td>1</td>
@@ -533,6 +541,7 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <td>const</td>
 <td>1</td>
 <td>100.00</td>
+<td></td>
 </tr>
 </tbody></table>
 <ol start="4">
@@ -544,7 +553,8 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <th>id</th>
 <th>select_type</th>
 <th>table</th>
-<th>partitions	type</th>
+<th>partitions</th>
+<th>type</th>
 <th>possible_keys</th>
 <th>key</th>
 <th>key_len</th>
@@ -566,6 +576,7 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <td>const</td>
 <td>1</td>
 <td>100.00</td>
+<td></td>
 </tr>
 <tr>
 <td>1</td>
@@ -579,6 +590,7 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <td>const</td>
 <td>1</td>
 <td>100.00</td>
+<td>Using index</td>
 </tr>
 </tbody></table>
 <ol start="5">
@@ -590,7 +602,8 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <th>id</th>
 <th>select_type</th>
 <th>table</th>
-<th>partitions	type</th>
+<th>partitions</th>
+<th>type</th>
 <th>possible_keys</th>
 <th>key</th>
 <th>key_len</th>
@@ -612,6 +625,7 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <td></td>
 <td>2</td>
 <td>100.00</td>
+<td>Using index</td>
 </tr>
 <tr>
 <td>1</td>
@@ -625,6 +639,7 @@ ADD CONSTRAINT &#96;fk_test2_test1&#96; FOREIGN KEY (&#96;test2_id&#96;) REFEREN
 <td>const</td>
 <td>1</td>
 <td>100.00</td>
+<td>Using where</td>
 </tr>
 </tbody></table>
 <h2 id="sql分析"><a href="#sql分析" class="headerlink" title="sql分析"></a>sql分析</h2><p>在分析以下sql的索引生效情况时，我想先说明一下<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008/ms189499%28v=sql.100%29?redirectedfrom=MSDN">Mysql的执行顺序</a></p>
