@@ -331,11 +331,11 @@
       </p>
       <p class="main-left--subtitle">
         <span>最近动态：</span>
-        <span>1周前</span>
+        <span>1月前</span>
       </p>
       <p class="main-left--subtitle">
         <span>上线时间：</span>
-        <span>40天</span>
+        <span>120天</span>
       </p>
       <p class="main-left--subtitle">
         <span>当前版本：</span>
@@ -393,7 +393,35 @@ pre:active {
       </div>
     </div>
     <article class="article-content">
-      
+      <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近在业务上遇到了一个现象，系统环境使用oracle数据库，业务场景是我所负责的零件相关系统接收外部系统返回的零件数据时，数据库中存在了相同零件号的情况。这种情况，在业务上是不允许的。现有系统的解决方案为：1. 数据库层面为零件号设置了唯一索引。2. 代码逻辑层面， 在解析报文创建零件的时候，会先查找数据库中是否存在改零件。如果已经存在便直接返回，如果不存在则需要创建。<br>经过上述两步的设置，从直观上认为数据库中应不会存在相同的零件号，但与之相反，数据库中偶然会出现一两次相同零件号的情况。因此，写这篇文章来分析定位一下原因，并给出解决方案。</p>
+<h2 id="环境模拟"><a href="#环境模拟" class="headerlink" title="环境模拟"></a>环境模拟</h2><p>这里使用docker安装oracle数据库进行请求模拟。<br>首先，下载oracle的数据库镜像，这里使用mac版本的，该镜像最多存储1GB的数据，最多使用1GB的内存。</p>
+<pre class="line-numbers language-none"><code class="language-none">docker pull oracleinanutshell&#x2F;oracle-xe-11g<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>启动oracle</p>
+<pre class="line-numbers language-none"><code class="language-none">docker run -d -p 1521:1521 --name oracle11g oracleinanutshell&#x2F;oracle-xe-11g<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p>进入docker容器</p>
+<pre class="line-numbers language-none"><code class="language-none">docker exec -it 039fd9d543bc &#x2F;bin&#x2F;bash<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>输入命令 <code>sqlplus system/oracle</code>，出现<br>Connected to:<br>Oracle Database 11g Express Edition Release 11.2.0.2.0 - 64bit Production字样，表示数据库启动成功。</p>
+<pre class="line-numbers language-none"><code class="language-none">创建用户名及密码
+SQL&gt; create user Jack identified by mimi;                                        
+
+User created.
+
+SQL&gt; select * from all_users;
+
+用户授权
+SQL&gt; grant connect,resource to JACK;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>创建一个用户表</p>
+<pre class="line-numbers language-none"><code class="language-none">create table user_test (
+    user_id number(10) primary key ,
+    user_name varchar2(100),
+    pass_word varchar2(200)
+);<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>设置用户名称为唯一键</p>
+<pre class="line-numbers language-none"><code class="language-none">create unique index user_name_un on user_test(user_name);<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+
+
     </article>
     
     <div class="read-nums">
@@ -414,7 +442,7 @@ pre:active {
     <div class="article-catelogue--wrapper">
       <div class="catelogue catelogue-1">
         <h3>目录</h3>
-        
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E6%A8%A1%E6%8B%9F"><span class="toc-number">2.</span> <span class="toc-text">环境模拟</span></a></li></ol>
       </div>
       
         <div class="catelogue catelogue-2">

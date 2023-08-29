@@ -331,11 +331,11 @@
       </p>
       <p class="main-left--subtitle">
         <span>最近动态：</span>
-        <span>1周前</span>
+        <span>1月前</span>
       </p>
       <p class="main-left--subtitle">
         <span>上线时间：</span>
-        <span>40天</span>
+        <span>120天</span>
       </p>
       <p class="main-left--subtitle">
         <span>当前版本：</span>
@@ -393,7 +393,13 @@ pre:active {
       </div>
     </div>
     <article class="article-content">
-      
+      <h2 id="异构数据"><a href="#异构数据" class="headerlink" title="异构数据"></a>异构数据</h2><p>如：在数据存贮的时候，主要数据会存储在mysql中，例如用户新增记录。在商品查询的时候，大量的数据直接查询mysql的速度会比较慢。引入Es搜索引擎可以实现全文检索，但是mysql与ES的存储结构不同，因此，需要将mysql数据存储格式转换为es的格式数据。如何实现数据的准时候同步，还要团队之间解除耦合。</p>
+<h2 id="mysql的主从同步机制"><a href="#mysql的主从同步机制" class="headerlink" title="mysql的主从同步机制"></a>mysql的主从同步机制</h2><p>当向mysql中插入&#x2F;删除一条数据的时候，会在主库的binlog日志中新增记录，然后传输binlog日志文件到从库，从库接收到binlog后，会写入relaylog中，从库执行relaylog中的记录到binlog中。</p>
+<h2 id="Canal"><a href="#Canal" class="headerlink" title="Canal"></a>Canal</h2><p>Canal 是阿里巴巴旗下的一款开源项目，纯Java开发，基于数据库增量日志解析，提供增量数据订阅&amp;消费，目前支持了mysql&#x2F;mariaDB。阿里的Canal的机制相当于代替了从库的位置，收集到了relaylog的日志后，不进行本地重放，而是自动触发java代码实现向ES的同步。自动触发java代码可以通过配置文件指定。Canal实现了监听的机制，但是没有实现团队间解耦的问题，可以通过引入MQ的方式实现解耦合。</p>
+<p>&#x2F;&#x2F;插入图片</p>
+<h2 id="测试环境及背景"><a href="#测试环境及背景" class="headerlink" title="测试环境及背景"></a>测试环境及背景</h2><p>背景：1. 在商品查询的时候，大量的数据直接查询mysql的速度会比较慢。引入Es搜索引擎可以实现全文检索，但是mysql与ES的存储结构不同，因此，需要将mysql数据存储格式转换为es的格式数据。2. 保证数据库中数据与Redis缓存中数据的一致性。3. 业务系统A的某一个业务涉及的数据变动，需要同步数据到业务系统B。</p>
+<p>环境：</p>
+
     </article>
     
     <div class="read-nums">
@@ -414,7 +420,7 @@ pre:active {
     <div class="article-catelogue--wrapper">
       <div class="catelogue catelogue-1">
         <h3>目录</h3>
-        
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E6%9E%84%E6%95%B0%E6%8D%AE"><span class="toc-number">1.</span> <span class="toc-text">异构数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql%E7%9A%84%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6"><span class="toc-number">2.</span> <span class="toc-text">mysql的主从同步机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Canal"><span class="toc-number">3.</span> <span class="toc-text">Canal</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%E5%8F%8A%E8%83%8C%E6%99%AF"><span class="toc-number">4.</span> <span class="toc-text">测试环境及背景</span></a></li></ol>
       </div>
       
         <div class="catelogue catelogue-2">
